@@ -1,0 +1,38 @@
+# depslib dependency file v1.0
+1261383224 source:c:\users\bj\documents\psx\test_psyq_examples\global_src\mattex.c
+
+1498860894 source:c:\users\bj\documents\psx\test_psyq_examples\tuto0\main.cpp
+	<sys/types.h>
+	<libetc.h>
+	<libgte.h>
+	<libgpu.h>
+	<libpress.h>
+	<libcd.h>
+	"tuto0.hpp"
+
+933099966 c:\psyq\include\sys\types.h
+
+933099952 c:\psyq\include\libetc.h
+
+933099954 c:\psyq\include\libgte.h
+
+933099952 c:\psyq\include\libgpu.h
+
+933099956 c:\psyq\include\libpress.h
+
+933099952 c:\psyq\include\libcd.h
+
+1498864007 c:\users\bj\documents\psx\test_psyq_examples\tuto0\tuto0.hpp
+	<sys/types.h>
+	<libetc.h>
+	<libgte.h>
+	<libgpu.h>
+	<libpress.h>
+	<libcd.h>
+	<stdio.h>
+
+933099962 c:\psyq\include\stdio.h
+
+1498879733 source:c:\users\bj\documents\psx\test_psyq_examples\tuto0\tuto0.cpp
+	"tuto0.hpp"
+

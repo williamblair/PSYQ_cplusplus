@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="tut0" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="psyq" />
+		<MakeCommands>
+			<Build command="$make -f $makefile" />
+			<CompileFile command="$make -f $makefile $file" />
+			<Clean command="$make -f $makefile clean" />
+			<DistClean command="$make -f $makefile distclean$target" />
+			<AskRebuildNeeded command="$make -q -f $makefile" />
+			<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
+		</MakeCommands>
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/test_psyq_examples" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="psyq" />
+				<MakeCommands>
+					<Build command="$make -f $makefile" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile" />
+					<SilentBuild command="$make -f $makefile &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/test_psyq_examples" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="psyq" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="C:/psyq/include" />
+			<Add directory="C:/psyq/psx/include" />
+		</Compiler>
+		<Linker>
+			<Add option="-llibpress" />
+			<Add directory="C:/psyq/include" />
+			<Add directory="C:/psyq/psx/include" />
+		</Linker>
+		<Unit filename="../global_src/MATTEX.C">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Makefile" />
+		<Unit filename="clean.bat" />
+		<Unit filename="comp.bat" />
+		<Unit filename="main.cpp" />
+		<Unit filename="tuto0.cpp" />
+		<Unit filename="tuto0.hpp" />
+		<Extensions>
+			<code_completion>
+				<search_path add="C:\psyq\include" />
+				<search_path add="C:\psyq\psx\include" />
+			</code_completion>
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
