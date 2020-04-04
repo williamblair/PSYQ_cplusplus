@@ -7,15 +7,28 @@
 #include <libpress.h>
 #include <libcd.h>
 
-#include "tuto0.hpp"
+//#include "tuto0.hpp"
+#include "System.h"
+
+#define ever ;;
 
 int main(void)
 {
-    // instance of the class
-    tuto0 t;
+    System * system = System::get_instance();
 
-    // run the class
-    t.run();
 
+    system->init();
+    system->init_graphics();
+
+    for (ever)
+    {
+        system->start_frame();
+
+        // Draw
+
+        system->end_frame();
+    }
+
+    system->deinit();
     return 0;
 }
