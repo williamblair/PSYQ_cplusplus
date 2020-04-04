@@ -7,14 +7,15 @@
 #include <libpress.h>
 #include <libcd.h>
 
-//#include "tuto0.hpp"
 #include "System.h"
+#include "Sprite.h"
 
 #define ever ;;
 
 int main(void)
 {
-    System * system = System::get_instance();
+    Sprite_textured   sprite;
+    System *          system      = System::get_instance();
 
 
     system->init();
