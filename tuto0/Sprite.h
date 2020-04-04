@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 
+#include "Texture.h"
+
 class Sprite
 {
 public:
@@ -21,6 +23,10 @@ public:
     // set the width and height of the sprite
     void set_size(const u_short width,
                   const u_short height);
+
+    // immediately send the primitive to the GPU, not
+    // in an order table
+    void draw();
 
 protected:
 
@@ -45,6 +51,20 @@ public:
     void set_size(const u_short width,
                   const u_short height);
 
+    // immediately send the primitive to the GPU, not
+    // in an order table
+    void draw();
+
+    // Load texture contents into memory and apply to the primitive
+    void load_texture(u_long *texdata,  // pointer to texture data
+                      u_long *clutdata, // pointer to CLUT data (NULL if none)
+                      TEXTURE_BPP bpp,  // 0 - 16bit, 1 - 8bit, 2 - 4 bit
+                      int x,        // where in VRAM to load the texture
+                      int y,
+                      int w,        // size of the texture
+                      int h,
+                      int clutX,    // where to upload the clut data (if given)
+                      int clutY);
 
 private:
     
@@ -54,6 +74,9 @@ private:
     // Texture offset
     u_short u;
     u_short v;
+
+    // Texture properties
+    Texture texture;
 };
 
 #endif // end ifdef SPRITE_H_INCLUDED
