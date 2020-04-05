@@ -1,9 +1,10 @@
 
     Start     Stop   Length      Obj Group            Section name
- 80010000 8001064B 0000064C 80010000 text             .rdata
- 8001064C 80017DBF 00007774 8001064C text             .text
- 80017DC0 8001A5BB 000027FC 80017DC0 text             .data
- 8001A5C0 8001A5C3 00000004 8001A5C0 bss              .sbss
- 8001A5C8 800202B7 00005CF0 8001A5C8 bss              .bss
+ 80010000 8001063F 00000640 80010000 text             .rdata
+ 80010640 800181AF 00007B70 80010640 text             .text
+ 800181B0 800181B3 00000004 800181B0 text             .ctors
+ 800181B4 8001AADB 00002928 800181B4 text             .data
+ 8001AAE0 8001AAE3 00000004 8001AAE0 bss              .sbss
+ 8001AAE8 800207D7 00005CF0 8001AAE8 bss              .bss
 
 Program entry point : 00000000

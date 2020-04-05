@@ -1,4 +1,4 @@
-// rewriting tutorial 1 in c++
+// rewriting tutorial 0 in c++
 
 #include <sys/types.h>
 #include <libetc.h>

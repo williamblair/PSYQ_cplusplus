@@ -2,7 +2,7 @@
 
 :: the psyq make utility
 ::psymake
-ccpsx -O3 -Xo$80010000 tuto1.cpp main.cpp ../global_src/BALLTEX.C -otuto1.cpe,tuto1.sym,mem.map -llibpress
+ccpsx -O3 -Xo$80010000 main.cpp System.cpp Sprite.cpp Sprite_textured.cpp Texture.cpp ../global_src/BALLTEX.C -otuto1.cpe,tuto1.sym,mem.map -llibpress
 ::pause
 
 :: converts the generated cpe file to a PSX EXE file, which can be run by an emulator
