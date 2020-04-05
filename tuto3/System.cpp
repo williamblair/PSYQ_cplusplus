@@ -16,8 +16,9 @@ void System::init()
 
     SetGraphDebug(0); // set graphics debug mode
 
+    // This is done by the Pad class now
     //myPadInit(mode); // initialize the controller
-    PadInit(0);
+    //PadInit(0);
 
     setRECT(&rect, 0, 0, 256, 240); // set the size of the rectangle, args: x,y,width,height
     ClearImage(&rect, 0, 0, 0); // fills the rectangle with rgb (black in this case - 0,0,0
@@ -94,7 +95,7 @@ void System::end_frame()
 void System::deinit()
 {
     //myPadStop(); // shut down the controller lib
-    PadStop();
+    //PadStop();
     StopCallback(); // StopCallback shuts down most other libraries (minus controller, memory card, etc.)
     return;
 }

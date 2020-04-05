@@ -24,6 +24,9 @@ public:
     //  (accesses the System singleton instance to add)
     void draw();
 
+    // Rotate the amount given around each of the axes
+    void rotate(int x, int y, int z);
+
 private:
     
     // cube points

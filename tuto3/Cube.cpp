@@ -39,16 +39,17 @@ void Cube::draw()
     // Current cube vertex
     SVECTOR  ** vertex_ptr = vertices;
 
+
+    // The GTE has one matrix register; its best to save it
+    PushMatrix();
+
     // Set GTE rotation and translation
     RotMatrix(&angle, &mat);
     TransMatrix(&mat, &translation);
     SetRotMatrix(&mat);
     SetTransMatrix(&mat);
-
-    // The GTE has one matrix register; its best to save it
-    PushMatrix();
     
-        for (i=0; i<6; ++i)
+        for (i=0; i<6; i++)
         {
             
             // translate from local coordinates to screen
@@ -60,13 +61,16 @@ void Cube::draw()
                                        vertex_ptr[2], 
                                        vertex_ptr[3], 
                                         
-                                      (long*)&prims[i].x0, 
-                                      (long*)&prims[i].x1, // long *sxy0, sxy1
-                                      (long*)&prims[i].x3, // three then two intentionally
+                                      (long*)&(prims[i].x0), 
+                                      (long*)&(prims[i].x1), // long *sxy0, sxy1
+                                      (long*)&(prims[i].x3), // three then two intentionally
                                                                // the vertices order must be screwed up
-                                      (long*)&prims[i].x2, // long *sxy2, sxy3
+                                      (long*)&(prims[i].x2), // long *sxy2, sxy3
                                         
                                       &p, &otz, &flg);
+            
+            // Update which vertices we're working with
+            vertex_ptr += 4;
             
             // if primitive is back faced, skip it
             if (isomote <= 0)
@@ -80,13 +84,18 @@ void Cube::draw()
                 system->add_prim(&prims[i], otz);
             }
 
-            // Update which vertices we're working with
-            vertex_ptr += 4;
         } 
 
 
     // Restore the matrix register
     PopMatrix();
+}
+
+void Cube::rotate(int x, int y, int z)
+{
+    angle.vx += x;
+    angle.vy += y;
+    angle.vz += z;
 }
 
 
@@ -123,7 +132,7 @@ SVECTOR	* Cube::vertices[6*4] = {
 
 // normal list
 SVECTOR	* Cube::normals[6] = {
-	&Cube::N5, &Cube::N0, &Cube::N4, &Cube::N1, &Cube::N3, &Cube::N2
+	&Cube::N5, &Cube::N0, &Cube::N4, &Cube::N1, &Cube::N3, &Cube::N2,
 };
 
 
