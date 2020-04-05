@@ -1,7 +1,7 @@
 :: batch file for compilation - psymake doesn't work on 64 bit
 
 :: compile the sources
-ccpsx -O3 -Xo$80010000 main.cpp tuto4.cpp -otuto4.cpe,tuto4.sym,mem.map -llibpress
+ccpsx -O3 -Xo$80010000 main.cpp System.cpp Sprite.cpp Sprite_textured.cpp Cube.cpp Pad.cpp -otuto4.cpe,tuto4.sym,mem.map -llibpress -llibpad
 
 :: convert into a .exe
 cpe2x tuto4.cpe
