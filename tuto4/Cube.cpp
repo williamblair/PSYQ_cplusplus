@@ -60,12 +60,13 @@ void Cube::draw()
     RotMatrix(&angle, &mat);
     TransMatrix(&mat, &translation);
 
-    // Calculate the light translation matrix (light_trans_mat)
+    // Calculate the light transformation matrix matrix (light_trans_mat)
+    // (move from local coordinates to the current object world coordinates)
     //  multiplied by the object transformation matrix
     RotMatrix(&light_angle, &light_trans_mat);
     MulMatrix(&light_trans_mat, &mat); // the result is saved in the first matrix
 
-    // Calculate and set the light matrix
+    // Apply the light transformation matrix to the actual light matrix
     // first two args are input, last is output
     //  from docs: "The function destroys the constant rotation matrix."
     //  This might be why the Set* matrices need to happen AFTER this
@@ -100,28 +101,25 @@ void Cube::draw()
                                         
                                       &p, &otz, &flg);
             
-            // Update which vertices we're working with
+            // if primitive is not back faced
+            if (isomote > 0)
+            {
+                // If our depth is valid, add it to the order table
+                if (otz > 0 && otz < OT_LEN)
+                {
+                    // Additional step now from previous tut (3)
+                    // Set the color of the primitives
+                    NormalColorCol(*normals_ptr, 
+                                    &colors[i], 
+                                    (CVECTOR*)&(prims[i].r0));
+
+                    system->add_prim(&prims[i], otz);
+                }
+            }
+
+            // Move to the next set of vertices/normals
+            normals_ptr++;
             vertex_ptr += 4;
-            
-            // if primitive is back faced, skip it
-            if (isomote <= 0)
-            {
-                normals_ptr++;
-                continue;
-            }
-
-            // If our depth is valid, add it to the order table
-            if (otz > 0 && otz < OT_LEN)
-            {
-                // Additional step now from previous tut (3)
-                // Set the color of the primitives
-                NormalColorCol(*normals_ptr, &colors[i], (CVECTOR*)&(prims[i].r0));
-
-                system->add_prim(&prims[i], otz);
-
-                normals_ptr++;
-            }
-
         } 
 
 
