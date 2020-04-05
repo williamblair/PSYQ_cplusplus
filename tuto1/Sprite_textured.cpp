@@ -73,6 +73,14 @@ void Sprite_textured::draw()
     DrawPrim(&poly_tex);
 }
 
+void Sprite_textured::draw_ordered(int depth)
+{
+    static System * sys_ptr = System::get_instance();
+
+    sys_ptr->add_prim( (void*)&poly_tex, 
+                        depth);
+}
+
 
 void Sprite_textured::copy_texture(const Sprite_textured& sprite)
 {

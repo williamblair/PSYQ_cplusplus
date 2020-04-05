@@ -43,6 +43,9 @@ public:
     // so that's pretty cool
     void deinit();
 
+    // Add a primitive to the order table at the given depth
+    void add_prim(void * prim, int depth);
+
 private:
 
     // private singleton constructor

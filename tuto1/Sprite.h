@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #include "Texture.h"
+#include "System.h"
 
 class Sprite
 {
@@ -61,6 +62,10 @@ public:
     // immediately send the primitive to the GPU, not
     // in an order table
     void draw();
+
+    // Add the sprite to the system order table (accesses the System
+    // singleton instance)
+    void draw_ordered(int depth);
 
     // Load texture contents into memory and apply to the primitive
     void load_texture(u_long *texdata,  // pointer to texture data

@@ -54,11 +54,17 @@ void System::start_frame()
     PutDrawEnv(cur_buf ? &disp_buffs[1].draw : &disp_buffs[0].draw);
     PutDispEnv(cur_buf ? &disp_buffs[1].disp : &disp_buffs[0].disp);
     cur_buf = !cur_buf;
+
+    // Args - the OT buffer, and the buffer length
+    ClearOTag(disp_buffs[cur_buf].ot, 8);
 }
 
 void System::end_frame()
 {
+    DrawOTag(disp_buffs[cur_buf].ot);
+    
     FntFlush(-1);
+    DrawSync(0);
     VSync(0);
 }
 
@@ -68,5 +74,11 @@ void System::deinit()
     PadStop();
     StopCallback(); // StopCallback shuts down most other libraries (minus controller, memory card, etc.)
     return;
+}
+
+void System::add_prim(void * prim, int depth)
+{
+    AddPrim(&disp_buffs[cur_buf].ot[depth], 
+            prim);
 }
 
