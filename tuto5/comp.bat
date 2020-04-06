@@ -1,10 +1,7 @@
 :: batch file for compilation - psymake doesn't work on 64 bit
 
-set PATH=C:\PSYQ\BIN
-set PSYQ_PATH=C:\PSYQ\BIN
-
 :: compile the sources
-ccpsx -O3 -Xo$80010000 main.cpp tuto5.cpp -otuto5.cpe,tuto5.sym,mem.map -llibpress
+ccpsx -O3 -Xo$80010000 main.cpp System.cpp Sprite.cpp Sprite_textured.cpp Cube.cpp Pad.cpp Texture.cpp ../global_src/BGTEX.C -otuto5.cpe,tuto5.sym,mem.map -llibpress -llibpad
 
 :: convert into a .exe
 cpe2x tuto5.cpe
