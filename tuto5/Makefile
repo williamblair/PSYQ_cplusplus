@@ -11,7 +11,7 @@ all:
 
 # desired output name
 # applies to the .cpe and .exe
-BIN = tuto5
+BIN = tuto4
 
 # psx emulator to run the build with
 EMULATOR = C:\psyq\no_psx\NO_PSX.exe
