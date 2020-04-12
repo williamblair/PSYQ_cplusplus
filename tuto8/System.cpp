@@ -35,10 +35,10 @@ void System::init_graphics()
     // when buffer 1 is drawing, 2 is being displayed, and vice versa
     // buffer 1: (0, 0)-(320, 240)
     // buffer 2: (0,240)-(320, 480)
-    SetDefDrawEnv(&disp_buffs[0].draw, 0, 0, 320, 240);
-    SetDefDispEnv(&disp_buffs[0].disp, 0, 240, 320, 240);
-    SetDefDrawEnv(&disp_buffs[1].draw, 0, 240, 320, 240);
-    SetDefDispEnv(&disp_buffs[1].disp, 0, 0, 320, 240);
+    SetDefDrawEnv(&disp_buffs[0].draw, 0, 0, 256, 240);
+    SetDefDispEnv(&disp_buffs[0].disp, 0, 240, 256, 240);
+    SetDefDrawEnv(&disp_buffs[1].draw, 0, 240, 256, 240);
+    SetDefDispEnv(&disp_buffs[1].disp, 0, 0, 256, 240);
 
     // tell the psx to auto clear the bg
     disp_buffs[0].draw.isbg = disp_buffs[1].draw.isbg = 1;

@@ -59,6 +59,9 @@ public:
     void set_pos(const u_short x, 
                  const u_short y);
 
+    void set_texture_offset(const u_short u,
+                            const u_short v);
+
     // immediately send the primitive to the GPU, not
     // in an order table
     void draw();
@@ -83,10 +86,11 @@ public:
 
 private:
     
-    // textured with 4 points (a rectangle)
-    //POLY_FT4 poly_tex;
-    SPRT     sprite_prim;
-    DR_MODE  dr_mode;
+    // ORDER MATTERS! (the dr_mode has to come first)
+    struct {
+        DR_MODE  dr_mode;
+        SPRT     sprite_prim;
+    } prims;
 
     // Texture offset
     u_short u;

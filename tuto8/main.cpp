@@ -82,6 +82,12 @@ int main(void)
                             256, 256,     // Texture size
                             0, 485        // CLUT VRAM X,Y
                           );
+
+    window_spr.set_size(256,200);
+    window_spr.set_pos(0,0);
+
+    near0_spr.set_size(256, 168);
+    near0_spr.set_pos(0,0);
     
     for (ever)
     {
@@ -89,6 +95,10 @@ int main(void)
 
         
         pad1.read();
+
+
+        window_spr.draw_ordered(1); // depth of 1
+        near0_spr.draw_ordered(2); // depth of 2
 
         system->end_frame();
     }

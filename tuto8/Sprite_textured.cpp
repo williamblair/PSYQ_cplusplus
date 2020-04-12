@@ -5,17 +5,16 @@
 Sprite_textured::Sprite_textured()
 {
     // initialize internal prim values
-    //SetPolyFT4(&poly_tex);
-
-    SetSprt(&sprite_prim);
-    SetShadeTex(&sprite_prim, 1); // disable shading
+    SetSprt(&prims.sprite_prim);
+    SetShadeTex(&prims.sprite_prim, 1); // disable shading
 
     // initialize texture offset
     u = v = 0;
     
-    setXYWH(&poly_tex, pos.vx, pos.vy, width, height);
-    setUVWH(&poly_tex, u, v, width, height);
-    setRGB0(&poly_tex, 128, 128, 128);
+    // Set size and offset within prim
+    setXY0(&prims.sprite_prim, pos.vx, pos.vy);
+    setUV0(&prims.sprite_prim, u, v);
+    setWH(&prims.sprite_prim, width, height);
 }
 
 void Sprite_textured::set_size(const u_short width,
@@ -24,8 +23,9 @@ void Sprite_textured::set_size(const u_short width,
     this->width  = width;
     this->height = height;
 
-    setXYWH(&poly_tex, pos.vx, pos.vy, width, height);
-    setUVWH(&poly_tex, u, v, width, height);
+    setXY0(&prims.sprite_prim, pos.vx, pos.vy);
+    setUV0(&prims.sprite_prim, u, v);
+    setWH(&prims.sprite_prim, width, height);
 }
 
 void Sprite_textured::set_pos(const u_short x, const u_short y)
@@ -33,7 +33,17 @@ void Sprite_textured::set_pos(const u_short x, const u_short y)
     pos.vx = x;
     pos.vy = y;
 
-    setXYWH(&poly_tex, pos.vx, pos.vy, width, height);
+    setXY0(&prims.sprite_prim, pos.vx, pos.vy);
+    setWH(&prims.sprite_prim, width, height);
+}
+
+void Sprite_textured::set_texture_offset(const u_short u, const u_short v)
+{
+    this->u = u;
+    this->v = v;
+
+    setUV0(&prims.sprite_prim, u, v);
+    setWH(&prims.sprite_prim, width, height);
 }
 
 void Sprite_textured::load_texture(
@@ -58,31 +68,53 @@ void Sprite_textured::load_texture(
                  clutX,
                  clutY);
 
-
     // Apply texture info to the primitive
-    setUVWH(&poly_tex, 
+    setUV0(&prims.sprite_prim, 
             u,          // offset from top left of texture
-            v,          
-            width,      // width and height from this offset to use
-            height);    //   (assumes is the same as the sprite size)
+            v);          
+    setWH(&prims.sprite_prim,
+          width,      // width and height from this offset to use
+          height);    //   (assumes is the same as the sprite size)
 
-    //poly_tex.tpage = texture.get_texture_page_id();
-    //poly_tex.clut  = texture.get_clut_id();
 
-    SetDrawMode(&dr_mode, 1, 1, texture.get_texture_page_id(), 0);
+//void SetDrawMode(
+//    DR_MODE *p, // Pointer to drawing mode primitive
+//    int dfe,    // 0: drawing not allowed in display area,
+//            // 1: drawing allowed in display area
+//
+//    int dtd, // 0: dithering off, 1: dithering on.
+//    int tpage, // Texture page 
+//    RECT *tw) // Pointer to texture window 
+//
+//
+//setDrawMode (p, dfe, dtd, tpage, tw) Macro version of SetDrawMode()
+//
+// Explanation
+//
+// Initializes a DR_MODE primitive. By using AddPrim() to insert a DR_MODE primitive into your primitive list, it
+// is possible to change part of your drawing environment in the middle of drawing.
+// If tw is 0, the texture window is not changed.
+
+    SetDrawMode(&prims.dr_mode, 1, 1, texture.get_texture_page_id(), 0);
+    prims.sprite_prim.clut = texture.get_clut_id();
     
+
+    if (MargePrim(&prims.dr_mode, &prims.sprite_prim) != 0)
+    {
+        printf("Merge Failed!\n");
+    }
 }
 
 void Sprite_textured::draw()
 {
-    DrawPrim(&poly_tex);
+    DrawPrim(&prims.dr_mode);
 }
 
 void Sprite_textured::draw_ordered(int depth)
 {
     static System * sys_ptr = System::get_instance();
 
-    sys_ptr->add_prim( (void*)&poly_tex, 
+    sys_ptr->add_prim( (void*)&prims.dr_mode, 
                         depth);
 }
 
@@ -95,13 +127,14 @@ void Sprite_textured::copy_texture(const Sprite_textured& sprite)
     texture.copy_from(sprite.texture);
 
     // Apply texture info to the primitive
-    setUVWH(&poly_tex, 
+    setUV0(&prims.sprite_prim,
             u,          // offset from top left of texture
-            v,          
+            v);
+    setWH(&prims.sprite_prim,
             width,      // width and height from this offset to use
-            height);    //   (assumes is the same as the sprite size)
+            height);    //  (assumes is the same as the sprite size)
 
-    poly_tex.tpage = texture.get_texture_page_id();
-    poly_tex.clut  = texture.get_clut_id();
+    SetDrawMode(&prims.dr_mode, 1, 1, texture.get_texture_page_id(), 0);
+    prims.sprite_prim.clut  = texture.get_clut_id();
 }
 
