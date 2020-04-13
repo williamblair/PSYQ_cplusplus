@@ -14,6 +14,14 @@
 
 #define ever ;;
 
+// For the squares to draw
+static CVECTOR colors[4] = {
+    { 255, 0, 255, 0 },
+    { 255, 255, 255, 0 },
+    { 0, 0, 0, 0 },
+    { 255, 255, 0, 0 }
+};
+
 int main(void)
 {
     int               i;
@@ -29,6 +37,16 @@ int main(void)
     system->init();
     system->init_graphics();
 
+    // Init prim
+    // Notice each has the same location; these locations
+    // are drawn relative to the top left of the current viewport
+    for (i=0; i<4; ++i)
+    {
+        SetPolyF4(&testpoly[i]);
+        setXYWH(&testpoly[i], 10, 30, 40, 40);
+        setRGB0(&testpoly[i], colors[i].r, colors[i].g, colors[i].b);
+    }
+
     
     for (ever)
     {
@@ -43,6 +61,10 @@ int main(void)
             system->start_frame(i);
 
             FntPrint("Viewport %d\n", i);
+
+            // Arbitrary depth of 1
+            // i is the current viewport
+            system->add_prim(&testpoly[i], 1, i);
 
             system->end_frame(i);
             
