@@ -19,8 +19,8 @@ extern u_long bgtex[];
 
 #define BG_MAPX		32		/* map size (X) */
 #define BG_MAPY		32		/* map size (Y) */
-#define BG_TEXX		32
-#define BG_TEXY		32
+#define BG_TEXX		32      /* texture size (width) */
+#define BG_TEXY		32      /* texture size (height) */
 
 /*
  * BG cell structure*/
@@ -99,9 +99,9 @@ public:
         // Init primitives
         i = 0;
         brightness = 0;
-        for (row = 0; row < 32; ++row)
+        for (row = 0; row < BG_MAPY; ++row)
         {
-            for (col = 0; col < 32; ++col)
+            for (col = 0; col < BG_MAPX; ++col)
             {
         
             SetPolyGT4(&prims[i]);
@@ -109,23 +109,24 @@ public:
             // Set tile brightness
             // further towards the top is 'further in the distance'
             // so it will be darker like its far away
+            brightness = 224 * row / BG_MAPY;// + 16;
             setRGB0(&prims[i], brightness, brightness, brightness);
             setRGB1(&prims[i], brightness, brightness, brightness);
-            setRGB2(&prims[i], brightness+4, brightness+4, brightness+4);
-            setRGB3(&prims[i], brightness+4, brightness+4, brightness+4);
+
+            brightness = 224 * (row+1) / BG_MAPY;// + 16;
+            setRGB2(&prims[i], brightness, brightness, brightness);
+            setRGB3(&prims[i], brightness, brightness, brightness);
 
             ++i;
             }
             
-            brightness += 8;
-            if (brightness > 255) brightness = 255;
         }
         
         // Set coordinates
         // each coordinate represents the top left
-        for (row = 0; row < 32; ++row)
+        for (row = 0; row < BG_MAPY; ++row)
         {
-            for (col = 0; col < 32; ++col)
+            for (col = 0; col < BG_MAPX; ++col)
             {
                 tile_x = (col * tile_width)  - tile_offset_x;
                 tile_y = (row * tile_height) - tile_offset_y;
@@ -158,8 +159,6 @@ public:
         
         for (i = 0; i < num_tiles; ++i)
         {
-            // defined above
-            //setUVWH(&prims[i], CType[1].u, CType[1].v, BG_MAPX-1, BG_MAPY-1);
             prims[i].tpage = map_texture.get_texture_page_id();
             prims[i].clut = map_texture.get_clut_id();
         }
@@ -175,10 +174,8 @@ public:
         int  tile_index_offset_y;
         int  tile_index_x;
         int  tile_index_y;
-        //long dmy;
-        //long flg;
-        //static SVECTOR cur_map_coord;
-        //static SVECTOR tmp_vector;
+        int  x_offset = 0;
+        int  y_offset = 0;
 
         static System * system = System::get_instance();
 
@@ -195,20 +192,30 @@ public:
         tile_index_offset_x = player_x/tile_width;
         tile_index_offset_y = player_y/tile_height;
 
-        for (row = 0; row < 32; ++row)
+        // left corner offset (for when the tile index doesn't evenly match up with a tile
+        // coordinate, so we can move between tiles instead of jumping between tiles
+        x_offset = -(player_x % tile_width);
+        y_offset = -(player_y % tile_height);
+
+        for (row = 0; row < BG_MAPY; ++row)
         {
-            for (col = 0; col < 32; ++col)
+            for (col = 0; col < BG_MAPX; ++col)
             {
 
             // rotate and skew the tile coordinates based on world rotation/translation
-            transform_tile_coords(row, col, prim_index);
+            transform_tile_coords(row, col, prim_index, x_offset, y_offset);
 
 
             // UV coordinates
-            tile_index_x = (col + tile_index_offset_x) & 31; // wrap around once reach the number of tiles
-            tile_index_y = (row + tile_index_offset_y) & 31;
+            tile_index_x = (col + tile_index_offset_x) & (BG_MAPX-1); // wrap around once reach the number of tiles
+            tile_index_y = (row + tile_index_offset_y) & (BG_MAPY-1);
             ctype_index = (int)(Map[tile_index_y][tile_index_x] - '0');
-            setUVWH(&prims[prim_index], CType[ctype_index].u, CType[ctype_index].v, tex_width-1, tex_height-1);
+
+
+            setUVWH(&prims[prim_index], 
+                    CType[ctype_index].u, 
+                    CType[ctype_index].v, 
+                    tex_width-1, tex_height-1);
 
 //        printf("Prim coords: (%d,%d),(%d,%d),(%d,%d),(%d,%d)", prims[prim_index].x0, prims[prim_index].y0,
 //                                                                prims[prim_index].x1, prims[prim_index].y1,
@@ -230,11 +237,28 @@ public:
         player_y += y;
 
         // wrap around if player moved past the edge of the map
-        if (player_x < 0) player_x = 32*tile_width + player_x;
-        if (player_x >= 32*tile_width) player_x -= 32*tile_width;
+        if (player_x < 0) player_x = BG_MAPX*tile_width + player_x;
+        if (player_x >= BG_MAPX*tile_width) player_x -= BG_MAPX*tile_width;
 
-        if (player_y < 0) player_y = 32*tile_height + player_y;
-        if (player_y >= 32*tile_height) player_y -= 32*tile_height;
+        if (player_y < 0) player_y = BG_MAPY*tile_height + player_y;
+        if (player_y >= BG_MAPY*tile_height) player_y -= BG_MAPY*tile_height;
+    }
+
+    void rotate(const int x, const int y, const int z)
+    {
+        world_angle.vx += x;
+        world_angle.vy += y;
+        world_angle.vz += z;
+    }
+
+    int angle_x() {
+         return world_angle.vx;
+    }
+    int angle_y() {
+        return world_angle.vy;
+    }
+    int angle_z() {
+        return world_angle.vz;
     }
 
 private:
@@ -249,17 +273,17 @@ private:
     int player_y;
 
     // The primitives to be transformed and drawn
-    static const int num_tiles = 32*32;
+    static const int num_tiles = BG_MAPX*BG_MAPY;
     POLY_GT4 prims[num_tiles]; // dummy for now
    
     // tile map positions (top left of each)
-    SVECTOR map[32][32]; 
+    SVECTOR map[BG_MAPX][BG_MAPY]; 
 
     static const int tile_width = 15;
     static const int tile_height = 15;
 
-    static const int tex_width = 32;
-    static const int tex_height = 32;
+    static const int tex_width = BG_TEXX;
+    static const int tex_height = BG_TEXY;
 
     Texture map_texture;
 
@@ -272,7 +296,9 @@ private:
         SetTransMatrix(&world_mat);
     }
 
-    inline void transform_tile_coords(const int row, const int col, int prim_index)
+    inline void transform_tile_coords(const int row, const int col, 
+                                        int prim_index, 
+                                        int x_offset, int y_offset)
     {
         long dmy;
         long flg;
@@ -280,7 +306,7 @@ private:
         SVECTOR tmp_vector;
         
         // initial coordinate (top left)
-        setVector(&cur_map_coord, map[row][col].vx, map[row][col].vy, 0);
+        setVector(&cur_map_coord, map[row][col].vx + x_offset, map[row][col].vy + y_offset, 0);
 
         // Top left
         RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
@@ -314,6 +340,7 @@ int main(void)
     Tile_map          tile_map;
     System *          system      = System::get_instance();
     Pad               pad1;
+    bool              bg_color_toggle = true; // whether or not bg is black or green
 
     // This needs to be called BEFORE system inits
     Pad::init();
@@ -334,6 +361,24 @@ int main(void)
         if (pad1.is_held(PadRight)) tile_map.move_player( 5, 0);
         if (pad1.is_held(PadUp))    tile_map.move_player(0, -5);
         if (pad1.is_held(PadDown))  tile_map.move_player(0, 5);
+
+        if (pad1.is_held(PadL1)) tile_map.rotate(0,5,0);
+        if (pad1.is_held(PadR1)) tile_map.rotate(0,-5,0);
+
+        if (pad1.is_clicked(PadCross)) {
+            bg_color_toggle = !bg_color_toggle;
+            if (bg_color_toggle) {
+                system->set_bg_color(0,0,0);
+            }
+            else {
+                system->set_bg_color(0,100,100);
+            }
+        }
+
+        FntPrint("World angle: %d,%d,%d\n", tile_map.angle_x(), 
+                                            tile_map.angle_y(), 
+                                            tile_map.angle_z());
+        FntPrint("BG color toggle: %d\n", (int)bg_color_toggle);
 
         tile_map.draw();
 

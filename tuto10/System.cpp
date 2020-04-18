@@ -42,8 +42,8 @@ void System::init_graphics()
 
     // tell the psx to auto clear the bg
     disp_buffs[0].draw.isbg = disp_buffs[1].draw.isbg = 1;
-    setRGB0(&disp_buffs[0].draw, 0,100,100); // rgb(0,0,0)
-    setRGB0(&disp_buffs[1].draw, 0,100,100); // same as above
+    setRGB0(&disp_buffs[0].draw, 0,0,0); // rgb(0,0,0)
+    setRGB0(&disp_buffs[1].draw, 0,0,0); // same as above
     
     // Set Fog color
     //SetFarColor(0, 200, 0);
@@ -114,4 +114,11 @@ void System::add_prim(void * prim, int depth)
     AddPrim(&disp_buffs[cur_buf].ot[depth], 
             prim);
 }
+
+void System::set_bg_color(u_char r, u_char g, u_char b)
+{
+    setRGB0(&disp_buffs[0].draw, r,g,b); // rgb(0,0,0)
+    setRGB0(&disp_buffs[1].draw, r,g,b); // same as above
+}
+
 

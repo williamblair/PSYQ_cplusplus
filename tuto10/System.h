@@ -49,6 +49,9 @@ public:
     // Add a primitive to the order table at the given depth
     void add_prim(void * prim, int depth);
 
+    // Set what color the background is cleared to each frame
+    void set_bg_color(u_char r, u_char g, u_char b);
+
 private:
 
     // private singleton constructor
