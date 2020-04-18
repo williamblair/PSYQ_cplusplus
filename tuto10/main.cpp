@@ -14,6 +14,69 @@
 
 #define ever ;;
 
+// Texture and CLUT
+extern u_long bgtex[];
+
+#define BG_MAPX		32		/* map size (X) */
+#define BG_MAPY		32		/* map size (Y) */
+#define BG_TEXX		32
+#define BG_TEXY		32
+
+/*
+ * BG cell structure*/
+typedef struct {
+	u_char	u, v;	/* cell texture UV*/
+	u_short	clut;	/* cell texture CLUT*/
+	u_long	attr;	/* attribute*/
+} CTYPE;
+
+static CTYPE CType[] = {	
+	0*BG_TEXX, 3*BG_TEXY, 0, 0,		/* 0: marsh */
+	2*BG_TEXX, 3*BG_TEXY, 0, 0,		/* 1: board */
+	3*BG_TEXX, 3*BG_TEXY, 0, 0,		/* 2: grass */
+	0*BG_TEXX, 4*BG_TEXY, 0, 0,		/* 3: bush */
+	0*BG_TEXX, 6*BG_TEXY, 0, 0,		/* 4: broad-leaved tree */
+	2*BG_TEXX, 6*BG_TEXY, 0, 0,		/* 5: coniferous tree */
+	2*BG_TEXX, 5*BG_TEXY, 0, 0,		/* 6: sand */
+	3*BG_TEXX, 5*BG_TEXY, 0, 0,		/* 7: rock */
+	0*BG_TEXX, 5*BG_TEXY, 0, 0,		/* 8: low mountain */
+	0*BG_TEXX, 7*BG_TEXY, 0, 0,		/* 9: high mountain */
+};
+
+static char *Map[] = {
+	"88232323234455542323277667899998",
+	"88822322232445554223227766789998",
+	"22223222324445542232277667899998",
+	"22322122322345542327676678998232",
+	"23322322232455442313277667898233",
+	"22332232223245544223227766728854",
+	"43322322345555544223227766728888",
+	"45431323455554422322776676724884",
+	"23223223455554422322776672854222",
+	"22322345555442232277667672232283",
+	"32232455442232277667672223223883",
+	"32123444233267676722123242388543",
+	"32232423327676767223223442388543",
+	"22223242332766676722322423883332",
+	"22223242332767672232442232324232",
+	"88223222324555542232277667899998",
+	"88223222324455542232277667899998",
+	"82222322232445554223227766789998",
+	"22223222324445542232277667899998",
+	"22322122322345542327676678998232",
+	"23322322232455442313277667898233",
+	"22332232223245544223227766728854",
+	"43322322345555544223227766728888",
+	"45431323455554422322776676724484",
+	"23223223455554422322776672852452",
+	"22322345555442232277667672232483",
+	"32232455442236277667672223223883",
+	"32123444233267676722124422388543",
+	"32232423324266767223267662388543",
+	"22223242332425276722326623883332",
+	"82223242332455242232442232324232",
+	"88223222324555542232277667899998",
+};
 
 // 3D perspective tile map (like pseudo-3d SNES modes)
 class Tile_map
@@ -23,32 +86,66 @@ public:
     Tile_map()
     {
         int i;
+        int tile_offset_x = tile_width/2; // offset so the map is centered on the screen
+        int tile_offset_y = tile_height/2;
         
         // Init primitives
         for (i=0; i<num_tiles; ++i)
         {
-            SetPolyG4(&prims[i]);
+            SetPolyGT4(&prims[i]);
 
             // set tile position and color
 //            setXYWH(&prims[i], 0, 0, tile_width, tile_height);
-            setRGB0(&prims[i], 255, 0, 0);
-            setRGB1(&prims[i], 0, 255, 0);
-            setRGB2(&prims[i], 255, 0, 255);
+            setRGB0(&prims[i], 255, 255, 255);
+            setRGB1(&prims[i], 255, 255, 255);
+            setRGB2(&prims[i], 255, 255, 255);
             setRGB3(&prims[i], 255, 255, 255);
+
         }
         
         // Set coordinates
-        setVector(&map[0][0], 10, 10, 0);
+        // each coordinate represents the top left
+        setVector(&map[0][0], -tile_offset_x, -tile_offset_y, 0); // top left
+        setVector(&map[1][0], -tile_offset_x, tile_offset_y, 0); // bottom left
+        setVector(&map[0][1], tile_offset_x, -tile_offset_y, 0); // top right
+        setVector(&map[1][1], tile_offset_x, tile_offset_y, 0); // bottom right
 
         // screen x, screen y, screen z
-        setVector(&world_position, 0, 240/2, 1024);
+        // geom and screen offset is center of the screen + 512 depth,
+        // this is relative to that
+        setVector(&world_position, 0, 0, 0);
 
         // 360 degrees = 4096
         setVector(&world_angle, -ONE/5, 0, 0);
     }
 
+    void load_texture()
+    {
+        int i;
+        
+        map_texture.load(
+            bgtex+0x80,     // texture data
+            bgtex,          // clut data
+            TEXTURE_4BIT,   // bpp
+            640, 0,         // VRAM tex location
+            256, 256,       // texture size
+            0, 481          // VRAM clut location
+        );
+        
+        for (i = 0; i < num_tiles; ++i)
+        {
+            // defined above
+            setUVWH(&prims[i], CType[1].u, CType[1].v, BG_MAPX-1, BG_MAPY-1);
+            prims[i].tpage = map_texture.get_texture_page_id();
+            prims[i].clut = map_texture.get_clut_id();
+        }
+    }
+
     void draw()
     {
+        int  row;
+        int  col;
+        int  prim_index = 0;
         long dmy;
         long flg;
         static SVECTOR cur_map_coord;
@@ -63,40 +160,49 @@ public:
 
         update_matrix();
 
+        for (row = 0; row < 2; ++row)
+        {
+            for (col = 0; col < 2; ++col)
+            {
 
-        // initial coordinate (top left)
-        setVector(&cur_map_coord, map[0][0].vx, map[0][0].vy, 0);
+            // initial coordinate (top left)
+            setVector(&cur_map_coord, map[row][col].vx, map[row][col].vy, 0);
 
-        // Top left
-        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-        prims[0].x0 = tmp_vector.vx;
-        prims[0].y0 = tmp_vector.vy;
-        cur_map_coord.vx += tile_width;
+            // Top left
+            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+            prims[prim_index].x0 = tmp_vector.vx;
+            prims[prim_index].y0 = tmp_vector.vy;
+            cur_map_coord.vx += tile_width;
 
-        // Top right
-        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-        prims[0].x1 = tmp_vector.vx;
-        prims[0].y1 = tmp_vector.vy;
-        cur_map_coord.vx -= tile_width;
-        cur_map_coord.vy += tile_height;
+            // Top right
+            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+            prims[prim_index].x1 = tmp_vector.vx;
+            prims[prim_index].y1 = tmp_vector.vy;
+            cur_map_coord.vx -= tile_width;
+            cur_map_coord.vy += tile_height;
 
-        // bottom left
-        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-        prims[0].x2 = tmp_vector.vx;
-        prims[0].y2 = tmp_vector.vy;
-        cur_map_coord.vx += tile_width;
+            // bottom left
+            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+            prims[prim_index].x2 = tmp_vector.vx;
+            prims[prim_index].y2 = tmp_vector.vy;
+            cur_map_coord.vx += tile_width;
 
-        // bottom right
-        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-        prims[0].x3 = tmp_vector.vx;
-        prims[0].y3 = tmp_vector.vy;
+            // bottom right
+            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+            prims[prim_index].x3 = tmp_vector.vx;
+            prims[prim_index].y3 = tmp_vector.vy;
 
-//        printf("Prim coords: (%d,%d),(%d,%d),(%d,%d),(%d,%d)", prims[0].x0, prims[0].y0,
-//                                                                prims[0].x1, prims[0].y1,
-//                                                                prims[0].x2, prims[0].y2,
-//                                                                prims[0].x3, prims[0].y3);
-        system->add_prim(&prims[0], 1); // OT depth of 1
+//        printf("Prim coords: (%d,%d),(%d,%d),(%d,%d),(%d,%d)", prims[prim_index].x0, prims[prim_index].y0,
+//                                                                prims[prim_index].x1, prims[prim_index].y1,
+//                                                                prims[prim_index].x2, prims[prim_index].y2,
+//                                                                prims[prim_index].x3, prims[prim_index].y3);
+            system->add_prim(&prims[prim_index], 1); // OT depth of 1
 
+            ++prim_index;           
+ 
+            }
+        }
+        
         PopMatrix();
     }
 
@@ -108,14 +214,16 @@ private:
     VECTOR world_position;
 
     // The primitives to be transformed and drawn
-    static const int num_tiles = 2;
-    POLY_G4 prims[num_tiles]; // dummy for now
+    static const int num_tiles = 4;
+    POLY_GT4 prims[num_tiles]; // dummy for now
    
     // tile map positions (top left of each)
     SVECTOR map[2][2]; 
 
     static const int tile_width = 30;
     static const int tile_height = 30;
+
+    Texture map_texture;
 
     void update_matrix()
     {
@@ -134,7 +242,8 @@ int main(void)
     System *          system      = System::get_instance();
     Pad               pad1;
 
-    POLY_G4 test_poly;
+    POLY_GT4 test_poly;
+    Texture test_texture;
 
     // This needs to be called BEFORE system inits
     Pad::init();
@@ -144,22 +253,27 @@ int main(void)
     system->init_graphics();
     system->init_3d();
 
-#if 0
-    SetPolyG4(&test_poly);
-    setRGB0(&test_poly, 255, 0, 0);
-    setRGB1(&test_poly, 255, 255, 0);
-    setRGB2(&test_poly, 255, 0, 255);
-    setRGB3(&test_poly, 255, 255, 255);
-    test_poly.x0 = 10;
-    test_poly.y0 = 10;
-    test_poly.x1 = 10+100;
-    test_poly.y1 = 10;
-    test_poly.x2 = 10;
-    test_poly.y2 = 10+100;
-    test_poly.x3 = 10+100;
-    test_poly.y3 = 10+100;
-#endif
-    
+    tile_map.load_texture();
+
+    test_texture.load(
+        bgtex+0x80,     // texture data
+        bgtex,          // clut data
+        TEXTURE_4BIT,   // bpp
+        320, 0,         // VRAM tex location
+        256, 256,       // texture size
+        0, 482          // VRAM clut location
+    );
+
+    SetPolyGT4(&test_poly);
+    setRGB0(&test_poly, 255,255,255);
+    setRGB1(&test_poly, 255,255,255);
+    setRGB2(&test_poly, 255,255,255);
+    setRGB3(&test_poly, 255,255,255);
+    setXYWH(&test_poly, 10, 10, 32, 32);
+    setUVWH(&test_poly, CType[1].u, CType[1].v, 31, 31);
+    test_poly.tpage = test_texture.get_texture_page_id();
+    test_poly.clut = test_texture.get_clut_id();
+
     for (ever)
     {
         system->start_frame();
@@ -168,7 +282,8 @@ int main(void)
 
         tile_map.draw();
 
-//        system->add_prim(&test_poly, 1);
+
+        system->add_prim(&test_poly, 1);
 
         system->end_frame();
     }

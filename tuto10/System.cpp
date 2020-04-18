@@ -46,7 +46,7 @@ void System::init_graphics()
     setRGB0(&disp_buffs[1].draw, 0,100,100); // same as above
     
     // Set Fog color
-    SetFarColor(0, 200, 0);
+    //SetFarColor(0, 200, 0);
 
     // disp_buffs[0].display enable
     SetDispMask(1);
@@ -64,7 +64,7 @@ void System::init_3d()
     SetGeomScreen(SCREEN_Z);
 
     // Starting point of depth queue
-    SetFogNear(FOG_NEAR, SCREEN_Z);
+    //SetFogNear(FOG_NEAR, SCREEN_Z);
 
 }
 
