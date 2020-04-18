@@ -111,8 +111,8 @@ public:
             // so it will be darker like its far away
             setRGB0(&prims[i], brightness, brightness, brightness);
             setRGB1(&prims[i], brightness, brightness, brightness);
-            setRGB2(&prims[i], brightness, brightness, brightness);
-            setRGB3(&prims[i], brightness, brightness, brightness);
+            setRGB2(&prims[i], brightness+4, brightness+4, brightness+4);
+            setRGB3(&prims[i], brightness+4, brightness+4, brightness+4);
 
             ++i;
             }
@@ -175,10 +175,10 @@ public:
         int  tile_index_offset_y;
         int  tile_index_x;
         int  tile_index_y;
-        long dmy;
-        long flg;
-        static SVECTOR cur_map_coord;
-        static SVECTOR tmp_vector;
+        //long dmy;
+        //long flg;
+        //static SVECTOR cur_map_coord;
+        //static SVECTOR tmp_vector;
 
         static System * system = System::get_instance();
 
@@ -200,32 +200,9 @@ public:
             for (col = 0; col < 32; ++col)
             {
 
-            // initial coordinate (top left)
-            setVector(&cur_map_coord, map[row][col].vx, map[row][col].vy, 0);
+            // rotate and skew the tile coordinates based on world rotation/translation
+            transform_tile_coords(row, col, prim_index);
 
-            // Top left
-            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-            prims[prim_index].x0 = tmp_vector.vx;
-            prims[prim_index].y0 = tmp_vector.vy;
-            cur_map_coord.vx += tile_width;
-
-            // Top right
-            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-            prims[prim_index].x1 = tmp_vector.vx;
-            prims[prim_index].y1 = tmp_vector.vy;
-            cur_map_coord.vx -= tile_width;
-            cur_map_coord.vy += tile_height;
-
-            // bottom left
-            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-            prims[prim_index].x2 = tmp_vector.vx;
-            prims[prim_index].y2 = tmp_vector.vy;
-            cur_map_coord.vx += tile_width;
-
-            // bottom right
-            RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
-            prims[prim_index].x3 = tmp_vector.vx;
-            prims[prim_index].y3 = tmp_vector.vy;
 
             // UV coordinates
             tile_index_x = (col + tile_index_offset_x) & 31; // wrap around once reach the number of tiles
@@ -293,6 +270,41 @@ private:
 
         SetRotMatrix(&world_mat);
         SetTransMatrix(&world_mat);
+    }
+
+    inline void transform_tile_coords(const int row, const int col, int prim_index)
+    {
+        long dmy;
+        long flg;
+        SVECTOR cur_map_coord;
+        SVECTOR tmp_vector;
+        
+        // initial coordinate (top left)
+        setVector(&cur_map_coord, map[row][col].vx, map[row][col].vy, 0);
+
+        // Top left
+        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+        prims[prim_index].x0 = tmp_vector.vx;
+        prims[prim_index].y0 = tmp_vector.vy;
+        cur_map_coord.vx += tile_width;
+
+        // Top right
+        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+        prims[prim_index].x1 = tmp_vector.vx;
+        prims[prim_index].y1 = tmp_vector.vy;
+        cur_map_coord.vx -= tile_width;
+        cur_map_coord.vy += tile_height;
+
+        // bottom left
+        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+        prims[prim_index].x2 = tmp_vector.vx;
+        prims[prim_index].y2 = tmp_vector.vy;
+        cur_map_coord.vx += tile_width;
+
+        // bottom right
+        RotTransPers(&cur_map_coord, (long*)&tmp_vector.vx, &dmy, &flg);
+        prims[prim_index].x3 = tmp_vector.vx;
+        prims[prim_index].y3 = tmp_vector.vy;
     }
 };
 
