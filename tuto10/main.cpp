@@ -86,29 +86,53 @@ public:
     Tile_map()
     {
         int i;
-        int tile_offset_x = tile_width/2; // offset so the map is centered on the screen
-        int tile_offset_y = tile_height/2;
+        int row;
+        int col;
+        int brightness;
+        int tile_x;
+        int tile_y;
+        int tile_offset_x = 320/2; // offset so the map is centered on the screen
+        int tile_offset_y = 240/2;
+
+        player_x = player_y = 0;
         
         // Init primitives
-        for (i=0; i<num_tiles; ++i)
+        i = 0;
+        brightness = 0;
+        for (row = 0; row < 32; ++row)
         {
+            for (col = 0; col < 32; ++col)
+            {
+        
             SetPolyGT4(&prims[i]);
 
-            // set tile position and color
-//            setXYWH(&prims[i], 0, 0, tile_width, tile_height);
-            setRGB0(&prims[i], 255, 255, 255);
-            setRGB1(&prims[i], 255, 255, 255);
-            setRGB2(&prims[i], 255, 255, 255);
-            setRGB3(&prims[i], 255, 255, 255);
+            // Set tile brightness
+            // further towards the top is 'further in the distance'
+            // so it will be darker like its far away
+            setRGB0(&prims[i], brightness, brightness, brightness);
+            setRGB1(&prims[i], brightness, brightness, brightness);
+            setRGB2(&prims[i], brightness, brightness, brightness);
+            setRGB3(&prims[i], brightness, brightness, brightness);
 
+            ++i;
+            }
+            
+            brightness += 8;
+            if (brightness > 255) brightness = 255;
         }
         
         // Set coordinates
         // each coordinate represents the top left
-        setVector(&map[0][0], -tile_offset_x, -tile_offset_y, 0); // top left
-        setVector(&map[1][0], -tile_offset_x, tile_offset_y, 0); // bottom left
-        setVector(&map[0][1], tile_offset_x, -tile_offset_y, 0); // top right
-        setVector(&map[1][1], tile_offset_x, tile_offset_y, 0); // bottom right
+        for (row = 0; row < 32; ++row)
+        {
+            for (col = 0; col < 32; ++col)
+            {
+                tile_x = (col * tile_width)  - tile_offset_x;
+                tile_y = (row * tile_height) - tile_offset_y;
+
+                setVector(&map[row][col], tile_x, tile_y, 0);
+            }
+        }
 
         // screen x, screen y, screen z
         // geom and screen offset is center of the screen + 512 depth,
@@ -135,7 +159,7 @@ public:
         for (i = 0; i < num_tiles; ++i)
         {
             // defined above
-            setUVWH(&prims[i], CType[1].u, CType[1].v, BG_MAPX-1, BG_MAPY-1);
+            //setUVWH(&prims[i], CType[1].u, CType[1].v, BG_MAPX-1, BG_MAPY-1);
             prims[i].tpage = map_texture.get_texture_page_id();
             prims[i].clut = map_texture.get_clut_id();
         }
@@ -146,6 +170,11 @@ public:
         int  row;
         int  col;
         int  prim_index = 0;
+        int  ctype_index = 0;
+        int  tile_index_offset_x;
+        int  tile_index_offset_y;
+        int  tile_index_x;
+        int  tile_index_y;
         long dmy;
         long flg;
         static SVECTOR cur_map_coord;
@@ -154,15 +183,21 @@ public:
         static System * system = System::get_instance();
 
         // test rotation
-        world_angle.vx += 10;
+        //world_angle.vx += 10;
 
         PushMatrix();
 
+        // update world rotation/translation
         update_matrix();
 
-        for (row = 0; row < 2; ++row)
+        // Calculate the current top left map index 
+        // (which tile x and y in *Map[] is our starting pos?)
+        tile_index_offset_x = player_x/tile_width;
+        tile_index_offset_y = player_y/tile_height;
+
+        for (row = 0; row < 32; ++row)
         {
-            for (col = 0; col < 2; ++col)
+            for (col = 0; col < 32; ++col)
             {
 
             // initial coordinate (top left)
@@ -192,6 +227,12 @@ public:
             prims[prim_index].x3 = tmp_vector.vx;
             prims[prim_index].y3 = tmp_vector.vy;
 
+            // UV coordinates
+            tile_index_x = (col + tile_index_offset_x) & 31; // wrap around once reach the number of tiles
+            tile_index_y = (row + tile_index_offset_y) & 31;
+            ctype_index = (int)(Map[tile_index_y][tile_index_x] - '0');
+            setUVWH(&prims[prim_index], CType[ctype_index].u, CType[ctype_index].v, tex_width-1, tex_height-1);
+
 //        printf("Prim coords: (%d,%d),(%d,%d),(%d,%d),(%d,%d)", prims[prim_index].x0, prims[prim_index].y0,
 //                                                                prims[prim_index].x1, prims[prim_index].y1,
 //                                                                prims[prim_index].x2, prims[prim_index].y2,
@@ -206,6 +247,19 @@ public:
         PopMatrix();
     }
 
+    void move_player(const int x, const int y)
+    {
+        player_x += x;
+        player_y += y;
+
+        // wrap around if player moved past the edge of the map
+        if (player_x < 0) player_x = 32*tile_width + player_x;
+        if (player_x >= 32*tile_width) player_x -= 32*tile_width;
+
+        if (player_y < 0) player_y = 32*tile_height + player_y;
+        if (player_y >= 32*tile_height) player_y -= 32*tile_height;
+    }
+
 private:
 
     // world transformations
@@ -213,15 +267,22 @@ private:
     SVECTOR world_angle;
     VECTOR world_position;
 
+    // map offset / 'player' coordinates
+    int player_x;
+    int player_y;
+
     // The primitives to be transformed and drawn
-    static const int num_tiles = 4;
+    static const int num_tiles = 32*32;
     POLY_GT4 prims[num_tiles]; // dummy for now
    
     // tile map positions (top left of each)
-    SVECTOR map[2][2]; 
+    SVECTOR map[32][32]; 
 
-    static const int tile_width = 30;
-    static const int tile_height = 30;
+    static const int tile_width = 15;
+    static const int tile_height = 15;
+
+    static const int tex_width = 32;
+    static const int tex_height = 32;
 
     Texture map_texture;
 
@@ -242,9 +303,6 @@ int main(void)
     System *          system      = System::get_instance();
     Pad               pad1;
 
-    POLY_GT4 test_poly;
-    Texture test_texture;
-
     // This needs to be called BEFORE system inits
     Pad::init();
     pad1.init_controller(0);
@@ -255,35 +313,18 @@ int main(void)
 
     tile_map.load_texture();
 
-    test_texture.load(
-        bgtex+0x80,     // texture data
-        bgtex,          // clut data
-        TEXTURE_4BIT,   // bpp
-        320, 0,         // VRAM tex location
-        256, 256,       // texture size
-        0, 482          // VRAM clut location
-    );
-
-    SetPolyGT4(&test_poly);
-    setRGB0(&test_poly, 255,255,255);
-    setRGB1(&test_poly, 255,255,255);
-    setRGB2(&test_poly, 255,255,255);
-    setRGB3(&test_poly, 255,255,255);
-    setXYWH(&test_poly, 10, 10, 32, 32);
-    setUVWH(&test_poly, CType[1].u, CType[1].v, 31, 31);
-    test_poly.tpage = test_texture.get_texture_page_id();
-    test_poly.clut = test_texture.get_clut_id();
-
     for (ever)
     {
         system->start_frame();
 
         pad1.read();
+        if (pad1.is_held(PadLeft))  tile_map.move_player(-5, 0);
+        if (pad1.is_held(PadRight)) tile_map.move_player( 5, 0);
+        if (pad1.is_held(PadUp))    tile_map.move_player(0, -5);
+        if (pad1.is_held(PadDown))  tile_map.move_player(0, 5);
 
         tile_map.draw();
 
-
-        system->add_prim(&test_poly, 1);
 
         system->end_frame();
     }
