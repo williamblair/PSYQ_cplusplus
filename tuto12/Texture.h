@@ -61,13 +61,10 @@ public:
     int get_height(void);
 
     // manually set where in VRAM the texture is located via updating the texture page id
-    void set_vram_pos(const int x, const int y, TEXTURE_BPP bpp)
-    {
-        tpage_id = GetTPage((int)bpp,  // bits per pixel
-                             0,      // semi-transparency rate
-                             x,      // vram x
-                             y);     // vram y
-    }
+    // note that the position will be aligned to the nearest previous valid texture page
+    // location (each tpage 64pix width, 256pix height)
+    // so whichever u,v coordinates used should be updated to compensate for this
+    void set_vram_pos(const int x, const int y, TEXTURE_BPP bpp, int clut_x, int clut_y);
 
 private:
     

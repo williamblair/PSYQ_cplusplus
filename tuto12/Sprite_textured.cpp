@@ -105,12 +105,20 @@ void Sprite_textured::load_texture(
     }
 }
     
-void Sprite_textured::set_texture_vram_pos(const int x, const int y, TEXTURE_BPP bpp)
+void Sprite_textured::set_vram_pos(const int x, const int y, TEXTURE_BPP bpp, int clut_x, int clut_y)
 {
-    texture.set_vram_pos(x, y, bpp);
+    texture.set_vram_pos(x, y, bpp, clut_x, clut_y);
 
+    // update u,v coordinates based on the offset of nearest texture page alignment
+    u = x % 64;
+    v = y % 256;
+    printf("U,V: %d,%d\n", u, v);
+    setUV0(&prims.sprite_prim, 
+            u,          // offset from top left of texture
+            v);          
 
     SetDrawMode(&prims.dr_mode, 1, 1, texture.get_texture_page_id(), 0);
+    prims.sprite_prim.clut = texture.get_clut_id();
     
 
     if (MargePrim(&prims.dr_mode, &prims.sprite_prim) != 0)
@@ -132,6 +140,11 @@ void Sprite_textured::draw_ordered(int depth)
                         depth);
 }
 
+void Sprite_textured::add_to_ot(u_long* ot, int depth)
+{
+    AddPrim(&ot[depth], 
+            (void*)&prims.dr_mode);
+}
 
 void Sprite_textured::copy_texture(const Sprite_textured& sprite)
 {
@@ -150,6 +163,11 @@ void Sprite_textured::copy_texture(const Sprite_textured& sprite)
 
     SetDrawMode(&prims.dr_mode, 1, 1, texture.get_texture_page_id(), 0);
     prims.sprite_prim.clut  = texture.get_clut_id();
+
+    if (MargePrim(&prims.dr_mode, &prims.sprite_prim) != 0)
+    {
+        printf("Merge Failed!\n");
+    }
 }
 
 void Sprite_textured::move(const int x, const int y)

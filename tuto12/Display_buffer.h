@@ -11,7 +11,7 @@
 #include <libcd.h>
 
 // In this sample the order table length is simple
-#define OT_LEN 8
+#define OT_LEN 512 
 
 typedef struct Display_buffer
 {

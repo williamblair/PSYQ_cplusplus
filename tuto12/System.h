@@ -56,7 +56,10 @@ private:
 
     // private singleton constructor
     System() :
-        cur_buf(0)
+        cur_buf(0),
+        r(0),
+        g(0),
+        b(0)
     {
     }
 
@@ -69,6 +72,9 @@ private:
 
     static const u_int FOG_NEAR = 300;
     static const u_int SCREEN_Z = 512;
+
+    u_char r, g, b;
+    //RECT rect; // rectangle used to draw on to represent the display
 };
 
 #endif // end ifdef SYSTEM_H_INCLUDED

@@ -31,19 +31,18 @@ void System::init_graphics()
     FntLoad(960, 256); // load the font into position 960, 256 in the frame buffer
     SetDumpFnt(FntOpen(16, 16, 256, 64, 0, 512)); // tell where to write to the screen: position 16,16, width 256, height 64, auto background clear (0,1), max text length
 
-    // Set up double buffering
-    // Buffer 1: Draw at 0,0, Display at 0,240
-    // Buffer 2: Draw at 0,240, Display at 0,0
-    SetDefDrawEnv(&disp_buffs[0].draw, 0, 0, 320, 240);
+    // The balls will be drawn to a single location in vram (no double buffering)
+    SetDefDrawEnv(&disp_buffs[0].draw, 320, 0, 320, 240);
+    SetDefDrawEnv(&disp_buffs[1].draw, 320, 0, 320, 240);
+    
+    // Display buffers however are normal
     SetDefDispEnv(&disp_buffs[0].disp, 0, 240, 320, 240);
-        
-    SetDefDrawEnv(&disp_buffs[1].draw, 0, 240, 320, 240);
     SetDefDispEnv(&disp_buffs[1].disp, 0, 0, 320, 240);
 
     // tell the psx to auto clear the bg
     disp_buffs[0].draw.isbg = disp_buffs[1].draw.isbg = 1;
-    setRGB0(&disp_buffs[0].draw, 0,0,0); // rgb(0,0,0)
-    setRGB0(&disp_buffs[1].draw, 0,0,0); // same as above
+    setRGB0(&disp_buffs[0].draw, 0,100,100); // rgb(0,0,0)
+    setRGB0(&disp_buffs[1].draw, 0,100,100); // same as above
     
     // Set Fog color
     //SetFarColor(0, 200, 0);
@@ -71,11 +70,13 @@ void System::init_3d()
 void System::start_frame()
 {
     // swap frame double buffer
+    cur_buf = !cur_buf;
     PutDrawEnv(cur_buf ? &disp_buffs[1].draw : 
                          &disp_buffs[0].draw);
     PutDispEnv(cur_buf ? &disp_buffs[1].disp : 
                          &disp_buffs[0].disp);
-    cur_buf = !cur_buf;
+
+    //ClearImage(&rect, 0, 0, 0); // fills the rectangle with rgb (black in this case - 0,0,0
 
     // Args - the OT buffer, and the buffer length
     //  ClearOTagR() clears OT as reversed order. This is natural
@@ -96,9 +97,9 @@ void System::end_frame()
     // ot[SIZE-1]
     DrawOTag(&disp_buffs[cur_buf].ot[OT_LEN-1]);
     
-    FntFlush(-1);
-    DrawSync(0);
-    VSync(0);
+//    FntFlush(-1);
+//    DrawSync(0);
+//    VSync(0);
 }
 
 void System::deinit()

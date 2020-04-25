@@ -96,3 +96,30 @@ int Texture::get_height(void)
 }
 
 
+void Texture::set_vram_pos(const int x, const int y, TEXTURE_BPP bpp, int clut_x, int clut_y)
+{
+    // calculate the texture page itself (64x256 block)
+//    int texture_x = x - (x % 64);
+//    int texture_y = y - (y % 256);
+    //int texture_x = x;
+    //int texture_y = y;
+    int texture_x = x;
+    int texture_y = y;
+
+    printf("Texture x,y: %d,%d\n", texture_x, texture_y);
+
+    //if (texture_x % 64 != 0) {
+    //    texture_x -= texture_x % 64;
+   // }
+    //if (texture_y % 256 != 0) {
+    //    texture_y -= texture_y % 256;
+    //}
+
+    tpage_id = GetTPage((int)bpp,  // bits per pixel
+                         0,      // semi-transparency rate
+                         texture_x,      // vram x
+                         texture_y);     // vram y
+
+    clut_id = GetClut(clut_x, clut_y);
+}
+

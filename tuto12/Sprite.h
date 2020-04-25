@@ -15,6 +15,12 @@
 #include "Texture.h"
 #include "System.h"
 
+// ORDER MATTERS! (the dr_mode has to come first)
+typedef struct Sprite_textured_prims {
+    DR_MODE  dr_mode;
+    SPRT     sprite_prim;
+} Sprite_textured_prims;
+
 class Sprite
 {
 public:
@@ -63,7 +69,7 @@ public:
                             const u_short v);
 
     // Sets where the internal texture is located in VRAM
-    void set_texture_vram_pos(const int x, const int y, TEXTURE_BPP bpp);
+    void set_vram_pos(const int x, const int y, TEXTURE_BPP bpp, int clut_x, int clut_y);
 
     // immediately send the primitive to the GPU, not
     // in an order table
@@ -72,6 +78,9 @@ public:
     // Add the sprite to the system order table (accesses the System
     // singleton instance)
     void draw_ordered(int depth);
+
+    // Add the sprite primitive to the given ot at the given depth
+    void add_to_ot(u_long* ot, int depth);
 
     // Load texture contents into memory and apply to the primitive
     void load_texture(u_long *texdata,  // pointer to texture data
@@ -91,12 +100,10 @@ public:
     void move(const int x, const int y);
 
 private:
+
+    // Textured primitives
+    Sprite_textured_prims prims;
     
-    // ORDER MATTERS! (the dr_mode has to come first)
-    struct {
-        DR_MODE  dr_mode;
-        SPRT     sprite_prim;
-    } prims;
 
     // Texture offset
     u_short u;
