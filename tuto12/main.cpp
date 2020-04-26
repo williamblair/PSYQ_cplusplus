@@ -21,11 +21,6 @@ extern u_long ballclut[][8];
 
 #define ever ;;
 
-// The OT to draw the screen sprite with
-#define SCR_SPR_OTLEN 8 
-u_long screen_spr_ot[2][SCR_SPR_OTLEN];
-u_char cur_buf = 0;
-
 // This sprite uses the area drawn offscreen (the balls)
 // as its VRAM texture location
 // each sprite has a height of 2; one sprite for every 2 lines on the screen
