@@ -80,6 +80,12 @@ static void move_ball(Ball* ball)
     ball->sprite.set_pos(ball->x, ball->y);
 }
 
+// The OT to draw the screen sprite with
+#define SCR_SPR_OTLEN 8
+u_long screen_spr_ot[2][SCR_SPR_OTLEN];
+u_char cur_buf = 0;
+
+
 int main(void)
 {
     int i;
