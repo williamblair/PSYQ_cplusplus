@@ -11,33 +11,13 @@
 #include "Cube.h"
 #include "Pad.h"
 
-
-// max size of a sprite
-#define SCREEN_WIDTH 255 
-#define SCREEN_HEIGHT 240
-
 #define ever ;;
 
-// This sprite uses the area drawn offscreen (the balls)
-// as its VRAM texture location
-// each sprite has a height of 2; one sprite for every 2 lines on the screen
-// this can actually be done with twice the amount with a height of 1 each
-// but it wasn't working for me for some reason; haven't debugged it
-static Sprite_textured screen_tex[SCREEN_HEIGHT/2];
+// the area for the balls to be drawn in, not the actual 
+// screen size
+#define SCREEN_WIDTH  100 
+#define SCREEN_HEIGHT 50
 
-static void curve_screen(const int amount)
-{
-    int main_offset = (320-SCREEN_WIDTH)/2;
-    int i;
-    for (i = 0; i < SCREEN_HEIGHT/2; ++i)
-    {
-        // sin wave curve
-        int offset = rsin(i*ONE/(SCREEN_HEIGHT/2))*amount/ONE;
-        //printf("Offset: %d\n", offset);
-        screen_tex[i].set_pos(main_offset+offset, i*2);
-        //screen_tex[i].set_size(SCREEN_WIDTH-offset, 2);
-    }
-}
 
 // ball texture and clut data
 extern u_long ball16x16[];
@@ -133,29 +113,69 @@ private:
     int vel_y;
 };
 
-
-#define MAX_BALLS 100 
+#define MAX_BALLS 30 
 Ball ball_sprites[MAX_BALLS];
 
-// The OT to draw the screen sprite with
-#define SCR_SPR_OTLEN 8
-u_long screen_spr_ot[2][SCR_SPR_OTLEN];
-u_char cur_buf = 0;
+class Viewport
+{
+public:
 
+    Viewport()
+    {
+        r = rand() % 255;
+        g = rand() % 255;
+        b = rand() % 255;
+
+        x = rand() % 250;
+        y = rand() % 200;
+
+        w = SCREEN_WIDTH  + (rand() % 40) - 20;
+        h = SCREEN_HEIGHT + (rand() % 40) - 20;
+
+        setRGB0(&drawenv, r,g,b);
+        drawenv.isbg = 1;
+    }
+
+    void draw(DRAWENV* base_env, u_long* ot, const int otlen)
+    {
+        // are we currently drawing at 240 or 0 px vertically?
+        int base_y = 0;
+        
+        base_y = base_env->clip.y;
+
+        // Set our values
+        SetDefDrawEnv(&drawenv, x, base_y + y, w, h);
+        setRGB0(&drawenv, r,g,b);
+        drawenv.isbg = 1;
+
+        // Apply the drawing area
+        PutDrawEnv(&drawenv);
+
+        // Draw the OT
+        DrawOTag(&ot[otlen-1]);
+    }
+    
+
+private:
+    DRAWENV drawenv;
+    u_char r,g,b;
+
+    int x,y;
+    int w,h;
+};
 
 int main(void)
 {
-    int i;
-    int               num_balls = MAX_BALLS;
+    int               i;
+    int               num_balls = 1;
     System *          system      = System::get_instance();
     Pad               pad1;
+    u_long *          cur_ot;
     
-    // Drawing environments (double buffered) for our screen sprite
-    DRAWENV           screen_spr_drawenv[2];
-    RECT              screen_rect;
-
-    // amount to sin-wave the screen sprite
-    int               curve_rate = 0;
+    #define MAX_VIEWPORTS 10
+    DRAWENV           cur_draw_env;
+    Viewport          viewports[MAX_VIEWPORTS];
+    int               num_viewports = 5;
 
     // This needs to be called BEFORE system inits
     Pad::init();
@@ -164,18 +184,7 @@ int main(void)
     system->init();
     system->init_graphics();
     system->init_3d();
-
-
-    setRECT(&screen_rect, 0, 0, 320, 240);
-    SetDefDrawEnv(&screen_spr_drawenv[0], 0, 0, 320, 240);
-    SetDefDrawEnv(&screen_spr_drawenv[1], 0, 240, 320, 240);
-    screen_spr_drawenv[0].isbg = screen_spr_drawenv[1].isbg = 1;
-    setRGB0(&screen_spr_drawenv[0], 0,0,0); // rgb(0,0,0)
-    setRGB0(&screen_spr_drawenv[1], 0,0,0); // rgb(0,0,0)
-
-    //system->set_bg_color(0,100,100);
-
-    // the normal sprites to draw
+    
     ball_sprites[0].init_from_texture(
         ball16x16,      // texture data
         ballclut[0],    // clut data
@@ -184,6 +193,7 @@ int main(void)
         16, 16,         // Texture size
         0, 481          // VRAM clut x,y
     );
+
     for (i = 1; i < MAX_BALLS; ++i)
     {
         ball_sprites[i].init_from_ball(ball_sprites[0], 
@@ -191,62 +201,64 @@ int main(void)
                                        10 * (i+1));     // y
     }
 
-    for (i = 0; i < SCREEN_HEIGHT/2; ++i)
-    {
-        // the screen-sprite
-        // will get its texture data from VRAM position 0,0
-        // the VRAM is 16bit hence we use TEXTURE_16BIT
-        screen_tex[i].set_vram_pos(320, i*2, TEXTURE_16BIT, 0, 481);
-        screen_tex[i].set_size(SCREEN_WIDTH,2);
-        screen_tex[i].set_pos((320-SCREEN_WIDTH)/2, i*2);
-    }
-
     for (ever)
     {
-        pad1.read();
-        
-        VSync(0);
-        DrawSync(0);
-        
         system->start_frame();
 
+        pad1.read();
+        if (pad1.is_clicked(PadUp)) {
+            ++num_balls;
+            if (num_balls > MAX_BALLS) {
+                num_balls = MAX_BALLS;
+            }
+        }
+        if (pad1.is_clicked(PadDown)) {
+            --num_balls;
+            if (num_balls < 1) {
+                num_balls = 1;
+            }
+        }
+        if (pad1.is_clicked(PadRight)) {
+            ++num_viewports;
+            if (num_viewports > MAX_VIEWPORTS) {
+                num_viewports = MAX_VIEWPORTS;
+            }
+        }
+        if (pad1.is_clicked(PadLeft)) {
+            --num_viewports;
+            if (num_viewports < 1) {
+                num_viewports = 1;
+            }
+        }
 
-        // offset each of the screen texture lines
-        if (pad1.is_held(PadL1)) {
-            curve_rate++;
-            curve_screen(curve_rate);
-        }
-        if (pad1.is_held(PadR1)) {
-            curve_rate--;
-            curve_screen(curve_rate);
-        }
 
         for (i = 0; i < num_balls; ++i)
         {
             ball_sprites[i].move();
             ball_sprites[i].draw();
         }
-
-        // Send the regular, normal OT to the GPU and wait for it to finish
-        system->end_frame();
-
-        // Set our screen sprite drawing area
-        // notice we set !cur_buf instead of cur_buf
-        PutDrawEnv(&screen_spr_drawenv[!cur_buf]);
-
-        // Draw our custom screen sprite order table
-        ClearOTagR((u_long*)screen_spr_ot[cur_buf], SCR_SPR_OTLEN);
-        // Draw each screen line
-        for (i = 0; i < SCREEN_HEIGHT/2; ++i)
-        {
-            screen_tex[i].add_to_ot((u_long*)screen_spr_ot[cur_buf], 2);
-        }
-        // Send all the lines to the gpu
-        DrawOTag(&screen_spr_ot[cur_buf][SCR_SPR_OTLEN-1]);
         
-        cur_buf = !cur_buf;
-        FntFlush(-1);
+        cur_ot = system->get_ot();
 
+        // Skip drawing the usual order table
+        //system->end_frame();
+
+        // Instead, draw each of our custom viewports
+        GetDrawEnv(&cur_draw_env); // save for after; like a stack push
+        for (i = 0; i < num_viewports; ++i)
+        {
+            // OT_LEN defined in Display_buffer.h
+            viewports[i].draw(&cur_draw_env, cur_ot, OT_LEN);
+        }
+        cur_draw_env.isbg = 0; // don't auto clear again
+        PutDrawEnv(&cur_draw_env);
+    
+        FntPrint("Num Viewports: %d\n", num_viewports);
+        FntPrint("Num Balls: %d\n", num_balls);
+
+        FntFlush(-1);
+        DrawSync(0);
+        VSync(0);
     }
 
     system->deinit();
