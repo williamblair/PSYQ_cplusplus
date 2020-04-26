@@ -11,9 +11,6 @@
 #include "Cube.h"
 #include "Pad.h"
 
-// ball texture and clut data
-extern u_long ball16x16[];
-extern u_long ballclut[][8];
 
 // max size of a sprite
 #define SCREEN_WIDTH 255 
@@ -42,43 +39,103 @@ static void curve_screen(const int amount)
     }
 }
 
-typedef struct Ball
+// ball texture and clut data
+extern u_long ball16x16[];
+extern u_long ballclut[][8];
+
+class Ball
 {
+public:
+
+    void init_from_texture(
+        u_long *texdata,  // pointer to texture data
+        u_long *clutdata, // pointer to CLUT data (NULL if none)
+        TEXTURE_BPP bpp,  // 0 - 16bit, 1 - 8bit, 2 - 4 bit
+        int x,        // where in VRAM to load the texture
+        int y,
+        int w,        // size of the texture
+        int h,
+        int clutX,    // where to upload the clut data (if given)
+        int clutY
+    )
+    {
+        
+        sprite.load_texture(
+            ball16x16,      // texture data
+            ballclut[0],    // clut data
+            TEXTURE_4BIT,   // BPP
+            640, 0,         // VRAM tex x,y
+            16, 16,         // Texture size
+            0, 481          // VRAM clut x,y
+        );
+        sprite.set_size(16, 16);
+        x = 10; 
+        y = 10;
+        vel_x = rand()%5 + 1;
+        vel_y = rand()%5 + 1;
+        sprite.set_pos(10,10);
+    }
+
+    void init_from_ball(const Ball& base, int x, int y)
+    {
+        sprite.copy_texture(base.sprite);
+        sprite.set_size(16,16);
+        this->x = x;
+        this->y = y;
+        vel_x = rand()%5 + 1;
+        vel_y = rand()%5 + 1;
+        sprite.set_pos(x,y);
+    }
+
+
+    // auto move the ball around the coordinates given by SCREEN_WIDTH, SCREEN_HEIGHT
+    void move()
+    {
+        x += vel_x;
+        y += vel_y;
+        
+        if (x < 0) x = 0;
+        if (x > SCREEN_WIDTH) x = SCREEN_WIDTH;
+        
+        if (y < 0) y = 0;
+        if (y > SCREEN_HEIGHT) y = SCREEN_HEIGHT;
+        
+        if (x == SCREEN_WIDTH || x == 0) {
+            bool vel_less_zero = (vel_x < 0);
+            vel_x = rand()%10;
+            if (!vel_less_zero) {
+                vel_x *= -1;
+            }
+    
+        }
+        
+        if (y == SCREEN_HEIGHT || y == 0) {
+            bool vel_less_zero = (vel_y < 0);
+            vel_y = rand()%10;
+            if (!vel_less_zero) {
+                vel_y *= -1;
+            }
+        }
+        
+        sprite.set_pos(x, y);
+    }
+
+    void draw()
+    {
+        sprite.draw_ordered(1);
+    }
+
+private:
     Sprite_textured sprite;
     int x;
     int y;
     int vel_x; // velocity
     int vel_y;
-} Ball;
+};
 
-#define NUM_BALLS 100 
-Ball ball_sprites[NUM_BALLS];
 
-static void move_ball(Ball* ball)
-{
-    ball->x += ball->vel_x;
-    ball->y += ball->vel_y;
-    if (ball->x < 0) ball->x = 0;
-    if (ball->x > SCREEN_WIDTH) ball->x = SCREEN_WIDTH;
-    if (ball->y < 0) ball->y = 0;
-    if (ball->y > SCREEN_HEIGHT) ball->y = SCREEN_HEIGHT;
-    if (ball->x == SCREEN_WIDTH || ball->x == 0) {
-        bool vel_less_zero = (ball->vel_x < 0);
-        ball->vel_x = rand()%10;
-        if (!vel_less_zero) {
-            ball->vel_x *= -1;
-        }
-
-    }
-    if (ball->y == SCREEN_HEIGHT || ball->y == 0) {
-        bool vel_less_zero = (ball->vel_y < 0);
-        ball->vel_y = rand()%10;
-        if (!vel_less_zero) {
-            ball->vel_y *= -1;
-        }
-    }
-    ball->sprite.set_pos(ball->x, ball->y);
-}
+#define MAX_BALLS 100 
+Ball ball_sprites[MAX_BALLS];
 
 // The OT to draw the screen sprite with
 #define SCR_SPR_OTLEN 8
@@ -89,6 +146,7 @@ u_char cur_buf = 0;
 int main(void)
 {
     int i;
+    int               num_balls = MAX_BALLS;
     System *          system      = System::get_instance();
     Pad               pad1;
     
@@ -118,7 +176,7 @@ int main(void)
     //system->set_bg_color(0,100,100);
 
     // the normal sprites to draw
-    ball_sprites[0].sprite.load_texture(
+    ball_sprites[0].init_from_texture(
         ball16x16,      // texture data
         ballclut[0],    // clut data
         TEXTURE_4BIT,   // BPP
@@ -126,22 +184,11 @@ int main(void)
         16, 16,         // Texture size
         0, 481          // VRAM clut x,y
     );
-    ball_sprites[0].sprite.set_size(16, 16);
-    ball_sprites[0].x = 10; 
-    ball_sprites[0].y = 10;
-    ball_sprites[0].vel_x = rand()%10;
-    ball_sprites[0].vel_y = rand()%10;
-    ball_sprites[0].sprite.set_pos(10,10);
-
-    for (i=1; i<NUM_BALLS; ++i)
+    for (i = 1; i < MAX_BALLS; ++i)
     {
-        ball_sprites[i].sprite.copy_texture(ball_sprites[0].sprite);
-        ball_sprites[i].sprite.set_size(16,16);
-        ball_sprites[i].x = 10*(i+1); 
-        ball_sprites[i].y = 10*(i+1);
-        ball_sprites[i].vel_x = rand()%10;
-        ball_sprites[i].vel_y = rand()%10;
-        ball_sprites[i].sprite.set_pos(ball_sprites[i].x,ball_sprites[i].y);
+        ball_sprites[i].init_from_ball(ball_sprites[0], 
+                                       10 * (i+1),      // x
+                                       10 * (i+1));     // y
     }
 
     for (i = 0; i < SCREEN_HEIGHT/2; ++i)
@@ -174,11 +221,10 @@ int main(void)
             curve_screen(curve_rate);
         }
 
-        for (i = 0; i < NUM_BALLS; ++i)
+        for (i = 0; i < num_balls; ++i)
         {
-            move_ball(&ball_sprites[i]);
-            ball_sprites[i].sprite.draw_ordered(1);
-            //ball_sprites[i].sprite.draw();
+            ball_sprites[i].move();
+            ball_sprites[i].draw();
         }
 
         // Send the regular, normal OT to the GPU and wait for it to finish
