@@ -25,7 +25,10 @@ and is totally handled by the GPU.
 VRAM IMAGE HERE
 
 All drawing and handling of VRAM is done by sending
-commands to the GPU.
+commands to the GPU. These commands are first stored in
+primitive structures such as POLY_F3, DRAWENV, and 
+DISPENV by the programmer, then sent to the gpu via
+functions that take these structures as arguments.
 
 Back to init_graphics(): First, FntLoad() and SetDumpFnt()
 load a basic font texture (I think from within the bios)
@@ -156,6 +159,28 @@ Looking back at main.cpp, at the for(ever) loop:
 * System::start_frame() is called
 * Sprite::draw() is called
 * System::end_frame() is called
+
+System::start_frame() swaps the display and draw areas
+used by the GPU via PutDrawEnv() and PutDispEnv(), using
+whichever areas are specified by cur_buf. Then cur_buf
+is switched (cur_buf = !cur_buf) while we work on the 
+next frame
+
+Sprite_textured::draw() simply calls DrawPrim(),
+which takes in a void pointer to any valid primitive
+type such as POLY_FT4, which is what the Sprite_textured
+class uses. This command tells the GPU to immediately
+draw this primitive in the current DRAWENV. Later sample
+programs will send multiple drawing commands to the GPU
+as a list via an "order table", which will be described
+later.
+
+System::end_frame() does two things. First, it makes 
+sure all FntPrint() calls have been drawn via the
+FntFlush() call. Second, it waits for the GPU drawing frame
+to the t.v. to finish via the VSync() call. Technically
+this function is missing a DrawSync() call as well, which
+will wait for the GPU to finish processing any commands.
 
 
 
