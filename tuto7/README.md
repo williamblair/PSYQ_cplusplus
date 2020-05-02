@@ -6,7 +6,7 @@ bunch of them and they're all centered around a single world matrix
 ## Additions to main()
 In this sample, there are 100 Cube class instances instead of a single
 one. There is now a global world_angle vector, world_translate vector, 
-and world_transform vector, all of which are used by each cube instance
+and world_transform MATRIX, all of which are used by each cube instance
 to draw themselves relative to the set world coordinates.
 
 Additionally, the light angle vector (lgtang) has been extracted from
@@ -36,8 +36,11 @@ the current cube, PopMatrix() is called which restores the previously set world_
 
 Next, we apply our cube's individual translation via RotTrans(), specifically to local_transform's
 .t data member. The cube's individual rotation is applied to local_transform via 
-RotMatrix(). Our input light_angle and local_transform is used to calculate the light
-matrices. As done previously.
+RotMatrix(). This is in contrast to previous samples, where our local translation and rotation
+were applied to our internal MATRIX, 'mat'. 
+
+Our input light_angle and local_transform is used to calculate the light
+matrices as done previously.
 
 Next, the Set\* functions are called as usual to apply our matrices for use by the GTE. The
 rest of the cube drawing is done as normal, noting we changed the primitive color calculation
