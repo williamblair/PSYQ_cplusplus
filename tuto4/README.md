@@ -22,7 +22,7 @@ These variables are combined in the following steps before drawing the cube
 * Apply the current cube's transformation the the light transformation via MulMatrix()
 * Apply the above two rotation and transformation to light_mat_final via MulMatrix0().
   Set\* GTE functions need to happen AFTER this function is called, I think due to the
-  fact that MulMatrix0 "destroys teh constant rotation matrix", according to the PSYQ docs
+  fact that MulMatrix0 "destroys the constant rotation matrix", according to the PSYQ docs
 * Set the light matrices to be used by the GTE via SetColorMatrix() and SetLightMatrix()
   (no calculations are done for color_matrix, it is constant)
 
