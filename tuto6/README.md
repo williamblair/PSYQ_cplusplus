@@ -20,6 +20,9 @@ based on the depth of the primitive. This function takes in the resulting
 'p' from RotAverageNclip4(), which is defined as the interpolation value
 for depth queueing.
 
+Additionally, in main(), the controller now moves the cube forward and
+backward via cube.translate() instead of rotation, which is done automatically.
+
 
 The result should look like this:
 
