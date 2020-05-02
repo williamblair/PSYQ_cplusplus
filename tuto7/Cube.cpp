@@ -34,8 +34,6 @@ Cube::Cube() :
     setVector(&angle, 0, 0, 0);
     setVector(&translation, 0, 0, 0);
 
-    // Light angle
-    setVector(&light_angle, 0, 0, 0);
 }
 
 void Cube::draw(MATRIX * transform_mat, SVECTOR * light_angle)
@@ -57,14 +55,12 @@ void Cube::draw(MATRIX * transform_mat, SVECTOR * light_angle)
     PushMatrix();
 
 
-
     // apply our local translation
     //  assuming angle would be done here normally as well, but
     //  for this demo the angle is done globally
     RotTrans(&translation, (VECTOR*)transform_mat->t, &flg);
 
-    // BJ test - individual rotation as well
-    //RotTrans(&rotation, (VECTOR*)transform_mat->)
+    // apply local rotation
     RotMatrix(&angle, transform_mat);
 
     // Calculate light
@@ -193,6 +189,4 @@ MATRIX Cube::light_mat = {
     0, 0, 0        //              #2
 };
 
-// Light angle
-SVECTOR Cube::light_angle;
 
