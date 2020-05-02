@@ -5,7 +5,8 @@ Cube drawing from previous tutorial except the cube is textured now
 ## Modified Cube class
 This version of the Cube class is the same as previous, except
 we replaced the POLY_F4 primitives with POLY_FT4 primitives (prims[6]).
-(T for textured!).
+(T for textured!), noticing in Cube::Cube we have to replace SetPolyF4()
+with SetPolyFT4()
 
 Thus, additionally a texture is required for the FT4 to use; stored in
 the Texture texture class member.
