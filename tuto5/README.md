@@ -26,13 +26,16 @@ The function Cube::load_texture() was added to forward the texture loading
 internally to the Texture member.
 
 ## Modified main()
-The only additions to main() are to first load the cube texture. This
+The only additions to main() are to first load the cube texture, then
+to set the size to use out of the texture. This
 particular texture is 4bit with a total size of 256x256 px, however our
 u,v clip we are using is of size 64x64 pixels, which will be stretched to
 cover whatever size each of the cube primitives has.
 
 Additionally, notice an extern reference to the texture is added to main
 also: 'extern u_long bgtex[]'.
+
+The result should look like this:
 
 ![Missing Screenshot](./screenshot.gif "Tuto5 screenshot")
 
