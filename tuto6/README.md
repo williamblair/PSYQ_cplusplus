@@ -1,4 +1,4 @@
-## Tuto 5: Textured cube and lighting
+## Tuto 6: Fog lighting/depth queueing
 
 Cube drawing from previous tutorial except fog/depth queue lighting is used
 
