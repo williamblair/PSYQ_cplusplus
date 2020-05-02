@@ -183,5 +183,6 @@ this function is missing a DrawSync() call as well, which
 will wait for the GPU to finish processing any commands.
 
 Finally, when we run the program we should see the following:
+
 ![Missing Screenshot](./screenshot.png "Tuto0 screenshot")
 
