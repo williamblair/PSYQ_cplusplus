@@ -69,8 +69,8 @@ in the x,y,z values pointer to by the second arg, in this case our square
 POLY_G4 primitive values. This is done 4 times, one for each square coordinate
 (top left, top right, bottom left, bottom right).
 
-Finally, the transformed values in square are drawn via addition to the system's
-current order table (system->add_prim) add a depth of 0. The depth here really
+Finally, the transformed values in square POLY_G4 are drawn via addition to the system's
+current order table (system->add_prim) at a depth of 0. The depth here really
 doesn't matter as no other primitives are being drawn so order doesn't matter.
 System::end_frame() works the same as previously and sends the order table list
 to the GPU via DrawOTag().
