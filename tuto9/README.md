@@ -50,5 +50,5 @@ have been sent to the GPU.
 
 The result should look like this:
 
-![Missing Screenshot](./screenshot.gif "Tuto8 screenshot")
+![Missing Screenshot](./screenshot.png "Tuto9 screenshot")
 
