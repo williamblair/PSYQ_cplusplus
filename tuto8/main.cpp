@@ -39,8 +39,8 @@ static void draw_far_bg(Sprite_textured& far0_spr, Sprite_textured& far1_spr, in
     //                           right side-left side
     // dividing by 4 just prevents it from moving as fast
     //  (the background should scroll slower than the foreground)
-    int left_right = (offset_x/4) & 0x100;
-    int distance = (offset_x/4) & 0xFF;
+    int left_right = (offset_x/4) & 0x100; // limit to 256 and wrap around
+    int distance = (offset_x/4) & 0xFF;    // limit to 255 and wrap around
 
     sprites[0] = left_right ? &far1_spr : &far0_spr;
     sprites[1] = left_right ? &far0_spr : &far1_spr;
@@ -71,8 +71,8 @@ static void draw_hills_bg(Sprite_textured& near0_spr, Sprite_textured& near1_spr
     // Figure out picture order (left side-right side or
     //                           right side-left side
     // Here we divide by 2 instead of 4 so it 'moves' faster
-    int left_right = (offset_x/2) & 0x100;
-    int distance = (offset_x/2) & 0xFF;
+    int left_right = (offset_x/2) & 0x100; // limit to 256
+    int distance = (offset_x/2) & 0xFF;    // limit to 255
 
     sprites[0] = left_right ? &near1_spr : &near0_spr;
     sprites[1] = left_right ? &near0_spr : &near1_spr;
