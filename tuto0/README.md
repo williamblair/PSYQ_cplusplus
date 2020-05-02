@@ -71,7 +71,7 @@ the image, and the color palette to draw with (for 8
 and 4bit textures). PSX also supports 16 bit images
 which don't use clut data. 640,0 is the VRAM location
 where the texture is loaded - notice this aligns
-with 64x32 increments for texture pages. Texture size
+with 64x256 increments for texture pages. Texture size
 is sent as well - this is the total size of the texture;
 for sprite sheets or times when you don't want to draw
 with the entire texture, this is specified in the sprite
@@ -182,5 +182,6 @@ to the t.v. to finish via the VSync() call. Technically
 this function is missing a DrawSync() call as well, which
 will wait for the GPU to finish processing any commands.
 
-
+Finally, when we run the program we should see the following:
+![Missing Screenshot](./screenshot.png "Tuto0 screenshot")
 
