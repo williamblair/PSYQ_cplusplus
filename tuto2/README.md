@@ -65,7 +65,7 @@ is -128 + 160 = 32.
 
 The 3d to 2d calculation is done via calls to RotTransPers, which takes a coordinates
 vector (an x,y,z value) from square_coords, and stores the transformed result
-in the x,y,z values pointer to by the second arg, in this case our square
+in the x,y values pointer to by the second arg, in this case our square
 POLY_G4 primitive values. This is done 4 times, one for each square coordinate
 (top left, top right, bottom left, bottom right).
 

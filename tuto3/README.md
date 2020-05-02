@@ -29,7 +29,7 @@ the primitive), with a few changes:
   instead of setting an arbitrary one as done in the previous
   sample. Like RotTransPers, the first four arguments are the input
   coordinates to be transformed, then the next four arguments are the
-  outputs to store the results in, which are again our POLY_F4 x,y,z
+  outputs to store the results in, which are again our POLY_F4 x,y
   coordinates.
 * RotAverageNclip4() returns an isomote value, which represents if the
   primitive is back faced if the value is less than zero, which in 
