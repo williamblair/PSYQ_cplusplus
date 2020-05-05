@@ -22,8 +22,6 @@ to both store texture data and draw what will be displayed
 on screen. This VRAM is inaccessable to the programmer
 and is totally handled by the GPU. 
 
-VRAM IMAGE HERE
-
 All drawing and handling of VRAM is done by sending
 commands to the GPU. These commands are first stored in
 primitive structures such as POLY_F3, DRAWENV, and 
@@ -49,9 +47,25 @@ In this case, the VRAM area at 0,0 with size 320,240 is used
 for drawing while 0,240 with size 320,240 is used for
 displaying, all for the first display buffer. The second
 display buffer swaps these (0,240 for drawing and 0,0 for
-displaying).
+displaying). 
 
-IMG HERE
+If you're using the NO$PSX emulator, you can view the internal
+VRAM, which for this sample is shown below:
+
+![Missing Screenshot](./vram.png "Tuto0 vram")
+
+On the far left we have both display buffer areas, in the middle
+we have the loaded texture data, then on the far right the green-sh
+rectangle area is the font texture used by FntPrint(). The middle
+textured area appears squished because it is a 4bit texture. The PSX
+VRAM is 16bit so it stores 4 of our texture pixels per single VRAM pixel in
+this case (16/4=4). Additionally, it's worth noting that the VRAM stores
+pixels in BGR format (blue green red) as opposed to the more commonly
+known RGB format.
+
+We can also note that the texture appears to have 16 different 
+sprites in it. We are only drawing the top left sprite due to
+our specified u,v, offset (0,0) and size (64,64 px).
 
 draw[0].isbg and draw[1].isb are flags to the GPU to
 say to automatically clear the background each draw
@@ -106,8 +120,6 @@ from the top left of the texture. Then if w,h is 64,64,
 but the loaded texture size was 256,256, then only the 
 texture area from 5,5, to 5+64,5+64 will be used when
 drawing.
-
-IMAGE HERE
 
 setRGB0() sets the "color" of the POLY primitive. In
 this case, sense the POLY is textured, the color means
