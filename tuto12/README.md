@@ -53,6 +53,11 @@ screen_spr_drawenv area, so we're actually drawing to the display area now.
 Our local screen_spr_ot order table is cleared and drawn to by the sprites via the 
 Sprite_textured::add_to_ot() function.
 
+Looking at the VRAM via NO$PSX, we can see both the offscreen drawing area and the
+displayed warped area:
+
+![Missing Screenshot](./vram.png "Tuto12 vram")
+
 
 The result should look like this:
 
