@@ -14,38 +14,15 @@
 // texture pattern in bgtex.c
 extern u_long bgtex[];
 
-#if 0
-/* light source color (Local Color Matrix)*/
-static MATRIX	cmat = {
-/*  light source   #0, #1, #2, */
-		ONE*3/4,  0,  0, /* R */
-		ONE*3/4,  0,  0, /* G */
-		ONE*3/4,  0,  0, /* B */
-};
-#endif
-
-/* the vector of the light source (Local light Matrix  */
-#if 0
-static MATRIX lgtmat = {
-	/*          X     Y     Z */
-	          ONE,  ONE, ONE,	/* light source #0*/
-		    0,    0,    0,	/* #1 */
-		    0,    0,    0	/* #2 */
-};
-#endif
-
 // To rotate and translate the entire world
 SVECTOR world_angle = {0,0,0};
-VECTOR world_translate = {0,0,512};
+VECTOR world_translate = {0,0,1024};
 MATRIX world_transform;
 
 // To rotate and translate each cube
-SVECTOR local_angle = {0,0,0};
 MATRIX local_transform;
 
 // Light matrices
-//MATRIX lls; // light source matrix
-//MATRIX light; // light matrix
 SVECTOR lgtang = {1024,-512,1024};
 
 
@@ -107,11 +84,7 @@ int main(void)
         RotMatrix(&world_angle, &world_transform);
         TransMatrix(&world_transform, &world_translate);
 
-        // Calculate the rotation portion of the matrix for each cube
-        //  translation will be done later for each individual cube coordinates
-        RotMatrix(&local_angle, &local_transform);
-
-        // Make the local screen matrix
+        // Initialize the local screen matrix
         // MulMatrix2 stores the result in the second arg; destroys current rotation mat
         MulMatrix2(&world_transform, &local_transform);
 

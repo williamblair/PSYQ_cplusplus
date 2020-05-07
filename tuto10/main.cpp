@@ -179,9 +179,7 @@ public:
 
         static System * system = System::get_instance();
 
-        // test rotation
-        //world_angle.vx += 10;
-
+        // Save the current MATRIX state
         PushMatrix();
 
         // update world rotation/translation

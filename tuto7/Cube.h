@@ -88,7 +88,7 @@ private:
     static MATRIX light_mat; // light source local light matrix
 
     // rotation angle for the light matrix
-    static SVECTOR light_angle;
+//    static SVECTOR light_angle;
     // Light translation matrix
     MATRIX light_trans_mat;
     // The final calculated light matrix
